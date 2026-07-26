@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* Paleta "Atardecer" */
+  --cream: #FFE8D6;      /* fondo principal, secciones claras */
+  --peach: #FFB79A;      /* acentos suaves, bordes, hover ligero */
+  --coral: #FF8360;      /* color primario — botones, links activos */
+  --flame: #E8543F;      /* hover/énfasis, precios, alertas */
+  --brick: #9C2B1B;      /* texto de marca, footer, contraste fuerte */
+  --ink: #2B1710;         /* texto principal (cálido, no negro puro) */
+  --ink-soft: #6B5850;    /* texto secundario */
+  --surface: #FFF6EF;     /* blanco cálido para cards sobre --bg */
+
+  /* Variables originales del proyecto, remapeadas a la nueva paleta */
+  --primary: var(--coral);
+  --secondary: var(--flame);
+  --accent: var(--brick);
+  --bg: var(--cream);
+  --white: #ffffff;
+  --text: var(--ink);
+  --gray: var(--ink-soft);
+
+  --gradient: linear-gradient(135deg, var(--coral) 0%, var(--flame) 100%);
+  --gradient-green: linear-gradient(135deg, var(--peach) 0%, var(--coral) 100%);
+  --gradient-sunset: linear-gradient(135deg, #FFE8D6 0%, #FFB79A 35%, #FF8360 65%, #E8543F 90%, #9C2B1B 100%);
+
+  --shadow: 0 8px 32px rgba(156, 43, 27, 0.15);
+  --shadow-hover: 0 16px 48px rgba(232, 84, 63, 0.25);
+  --shadow-soft: 0 4px 16px rgba(156, 43, 27, 0.08);
+
+  --font-display: 'Fraunces', serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --radius-sm: 10px;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1, h2, h3, .font-display {
+  font-family: var(--font-display);
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+button:hover {
+  transform: translateY(-2px);
+}
