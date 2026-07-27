@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useCartStore } from '../stores/cartStore'
+import { useWishlistStore } from '../stores/wishlistStore'
 
 const props = defineProps<{
   title: string
@@ -12,12 +13,17 @@ const props = defineProps<{
 }>()
 
 const cart = useCartStore()
+const wishlist = useWishlistStore()
 const added = ref(false)
 
 function agregar() {
   cart.addToCart({ ...props })
   added.value = true
   setTimeout(() => (added.value = false), 1500)
+}
+
+function toggleFavorite() {
+  wishlist.toggleWishlist({ ...props })
 }
 </script>
 
@@ -26,6 +32,18 @@ function agregar() {
     <RouterLink :to="`/product/${id}`" class="card-image-wrapper">
       <img :src="image" :alt="title" />
       <span class="category-badge">{{ category }}</span>
+
+      <button
+        class="favorite-btn"
+        :class="{ active: wishlist.isInWishlist(id) }"
+        @click.stop.prevent="toggleFavorite"
+        :aria-label="wishlist.isInWishlist(id) ? 'Quitar de favoritos' : 'Agregar a favoritos'"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" :fill="wishlist.isInWishlist(id) ? 'currentColor' : 'none'">
+          <path d="M12 21s-7-4.35-9-7.25C1 10 5 6 8.5 6 10 6 12 8 12 8s2-2 3.5-2C19 6 23 10 21 13.75 19 16.65 12 21 12 21z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
       <div class="card-overlay">
         <span class="overlay-cta">Ver detalle →</span>
       </div>
@@ -200,5 +218,36 @@ h3 {
 
 @media (max-width: 480px) {
   .card { width: 100%; }
+}
+
+.favorite-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--white);
+  color: var(--ink-soft);
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  transition: all 0.2s ease;
+}
+
+.favorite-btn:hover {
+  color: var(--coral);
+  transform: scale(1.08);
+}
+
+.favorite-btn.active {
+  color: var(--flame);
+}
+
+.favorite-btn.active:hover {
+  transform: scale(1.08);
 }
 </style>

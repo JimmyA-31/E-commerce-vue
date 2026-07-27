@@ -1,10 +1,19 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cartStore'
+import { useUserStore } from '../stores/userStore'
 
 const router = useRouter()
 const cart = useCartStore()
+const userStore = useUserStore();
+
+onMounted(() => {
+  if (userStore.isLoggedIn) {
+    form.value.name = userStore.user?.name || ''
+    form.value.email = userStore.user?.email || ''
+  }
+})
 
 const step = ref(1)
 const orderPlaced = ref(false)

@@ -5,6 +5,7 @@ import CheckoutView from '../views/CheckoutView.vue'
 import ReclamacionesView from '../views/ReclamacionesView.vue'
 import CategoryView from '../views/CategoryView.vue'
 import OffersView from '../views/OffersView.vue'
+import WishlistView from '../views/WishlistView.vue'
 import NotFoundView from '../views/NotFoundView.vue'
 
 const router = createRouter({
@@ -33,6 +34,10 @@ const router = createRouter({
     {
       path: '/reclamaciones',
       component: ReclamacionesView
+    },
+    {
+      path: '/favoritos',
+      component: WishlistView
     },
     {
       // Catch-all: cualquier ruta no definida cae aquí

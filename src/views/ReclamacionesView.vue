@@ -442,4 +442,52 @@ function submitForm() {
   color: var(--primary);
   font-weight: 900;
 }
+
+@media (max-width: 640px) {
+  .reclamaciones {
+    padding: 24px 16px;
+  }
+
+  .page-header h1 {
+    font-size: 26px;
+  }
+
+  .page-header p {
+    font-size: 14px;
+  }
+
+  .legal-banner {
+    flex-direction: column;
+    padding: 16px;
+    gap: 10px;
+  }
+
+  .form-card {
+    padding: 24px 18px;
+    gap: 20px;
+    border-radius: 16px;
+  }
+
+  .tipo-options {
+    grid-template-columns: 1fr;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .ticket {
+    padding: 14px 20px;
+    width: 100%;
+  }
+
+  .success h1 {
+    font-size: 26px;
+  }
+
+  .success p {
+    font-size: 14px;
+  }
+}
 </style>
