@@ -90,6 +90,9 @@ function logout() { userStore.logout(); showAccountMenu.value = false }
                 <strong>{{ userStore.user?.name }}</strong>
                 <small>{{ userStore.user?.email }}</small>
               </div>
+              <RouterLink to="/mis-pedidos" class="menu-item" @click="showAccountMenu = false">
+                Mis pedidos
+              </RouterLink>
               <button class="menu-item" v-if="userStore.isLoggedIn" @click="logout" type="button">Cerrar sesión</button>
               <button class="menu-item" v-else @click="openLoginModal" type="button">Ingresar</button>
             </div>
@@ -210,6 +213,11 @@ function logout() { userStore.logout(); showAccountMenu.value = false }
   padding: 12px !important;
   border-radius: 10px;
   font-weight: 700;
+}
+
+.menu-item {
+  display: block;
+  text-decoration: none;
 }
 
 /* Modal */
