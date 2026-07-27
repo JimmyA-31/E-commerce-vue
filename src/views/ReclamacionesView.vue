@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
+import LoadingSpinner from '../components/LoadingSpinner.vue'
 
 const submitted = ref(false)
+const isSubmitting = ref(false)
 
 const form = ref({
   // Datos personales
@@ -19,13 +21,123 @@ const form = ref({
   solution: ''
 })
 
+const errors = reactive({
+  name: '',
+  dni: '',
+  email: '',
+  phone: '',
+  description: ''
+})
+
+function clearError(field: keyof typeof errors) {
+  errors[field] = ''
+}
+
+function formatDni(e: Event) {
+  const input = e.target as HTMLInputElement
+  form.value.dni = input.value.replace(/\D/g, '').slice(0, 11)
+  clearError('dni')
+}
+
+function formatPhone(e: Event) {
+  const input = e.target as HTMLInputElement
+  form.value.phone = input.value.replace(/\D/g, '').slice(0, 9)
+  clearError('phone')
+}
+
+function validateForm(): boolean {
+  let valid = true
+
+  if (!form.value.name.trim()) {
+    errors.name = 'El nombre es obligatorio'
+    valid = false
+  } else if (form.value.name.trim().length < 3) {
+    errors.name = 'El nombre debe tener al menos 3 caracteres'
+    valid = false
+  } else {
+    errors.name = ''
+  }
+
+  if (!form.value.dni.trim()) {
+    errors.dni = 'El DNI/RUC es obligatorio'
+    valid = false
+  } else if (form.value.dni.length !== 8 && form.value.dni.length !== 11) {
+    errors.dni = 'DNI: 8 dígitos · RUC: 11 dígitos'
+    valid = false
+  } else {
+    errors.dni = ''
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!form.value.email.trim()) {
+    errors.email = 'El correo es obligatorio'
+    valid = false
+  } else if (!emailRegex.test(form.value.email)) {
+    errors.email = 'Ingresa un correo válido'
+    valid = false
+  } else {
+    errors.email = ''
+  }
+
+  if (!form.value.phone.trim()) {
+    errors.phone = 'El teléfono es obligatorio'
+    valid = false
+  } else if (form.value.phone.length < 9) {
+    errors.phone = 'El teléfono debe tener 9 dígitos'
+    valid = false
+  } else {
+    errors.phone = ''
+  }
+
+  if (!form.value.description.trim()) {
+    errors.description = 'Describe tu problema para poder atenderlo'
+    valid = false
+  } else if (form.value.description.trim().length < 15) {
+    errors.description = 'Por favor brinda más detalle (mínimo 15 caracteres)'
+    valid = false
+  } else {
+    errors.description = ''
+  }
+
+  return valid
+}
+
 function submitForm() {
-  submitted.value = true
+  if (!validateForm()) return
+
+  isSubmitting.value = true
+
+  // Simula el registro de la reclamación en el sistema
+  setTimeout(() => {
+    isSubmitting.value = false
+    submitted.value = true
+  }, 1600)
+}
+
+function nuevaReclamacion() {
+  submitted.value = false
+  form.value = {
+    name: '',
+    email: '',
+    phone: '',
+    dni: '',
+    tipo: 'reclamo',
+    orderNumber: '',
+    product: '',
+    description: '',
+    solution: ''
+  }
 }
 </script>
 
 <template>
   <main class="reclamaciones">
+
+    <LoadingSpinner
+      v-if="isSubmitting"
+      overlay
+      message="Registrando tu reclamación..."
+    />
 
     <!-- Success -->
     <div v-if="submitted" class="success">
@@ -36,7 +148,7 @@ function submitForm() {
         <span>N° de caso</span>
         <strong>#RC-{{ Math.floor(Math.random() * 900000) + 100000 }}</strong>
       </div>
-      <button class="btn-primary" @click="submitted = false">
+      <button class="btn-primary" @click="nuevaReclamacion">
         Nueva reclamación
       </button>
     </div>
@@ -95,21 +207,53 @@ function submitForm() {
             <div class="form-row">
               <div class="form-group">
                 <label>Nombre completo *</label>
-                <input v-model="form.name" type="text" placeholder="Juan Pérez" />
+                <input
+                  v-model="form.name"
+                  @input="clearError('name')"
+                  type="text"
+                  placeholder="Juan Pérez"
+                  :class="{ 'input-error': errors.name }"
+                />
+                <span v-if="errors.name" class="error-msg">{{ errors.name }}</span>
               </div>
               <div class="form-group">
                 <label>DNI / RUC *</label>
-                <input v-model="form.dni" type="text" placeholder="12345678" maxlength="11" />
+                <input
+                  :value="form.dni"
+                  @input="formatDni"
+                  type="text"
+                  inputmode="numeric"
+                  placeholder="12345678"
+                  maxlength="11"
+                  :class="{ 'input-error': errors.dni }"
+                />
+                <span v-if="errors.dni" class="error-msg">{{ errors.dni }}</span>
               </div>
             </div>
             <div class="form-row">
               <div class="form-group">
                 <label>Correo electrónico *</label>
-                <input v-model="form.email" type="email" placeholder="juan@email.com" />
+                <input
+                  v-model="form.email"
+                  @input="clearError('email')"
+                  type="email"
+                  placeholder="juan@email.com"
+                  :class="{ 'input-error': errors.email }"
+                />
+                <span v-if="errors.email" class="error-msg">{{ errors.email }}</span>
               </div>
               <div class="form-group">
                 <label>Teléfono *</label>
-                <input v-model="form.phone" type="tel" placeholder="+51 999 999 999" />
+                <input
+                  :value="form.phone"
+                  @input="formatPhone"
+                  type="tel"
+                  inputmode="numeric"
+                  placeholder="999999999"
+                  maxlength="9"
+                  :class="{ 'input-error': errors.phone }"
+                />
+                <span v-if="errors.phone" class="error-msg">{{ errors.phone }}</span>
               </div>
             </div>
           </div>
@@ -140,9 +284,12 @@ function submitForm() {
               <label>Descripción del problema *</label>
               <textarea
                 v-model="form.description"
+                @input="clearError('description')"
                 placeholder="Describe detalladamente tu problema..."
                 rows="4"
+                :class="{ 'input-error': errors.description }"
               ></textarea>
+              <span v-if="errors.description" class="error-msg">{{ errors.description }}</span>
             </div>
             <div class="form-group">
               <label>Solución esperada</label>
@@ -159,7 +306,7 @@ function submitForm() {
             <p>Al enviar este formulario, confirmas que los datos proporcionados son verídicos. ShopVue se compromete a dar respuesta en un plazo máximo de 15 días hábiles.</p>
           </div>
 
-          <button class="btn-primary" @click="submitForm">
+          <button class="btn-primary" @click="submitForm" :disabled="isSubmitting">
             📋 Enviar reclamación
           </button>
         </div>
@@ -353,6 +500,17 @@ function submitForm() {
   background: white;
 }
 
+.input-error {
+  border-color: #e8352a !important;
+  background: #fff5f4 !important;
+}
+
+.error-msg {
+  font-size: 12px;
+  color: #e8352a;
+  font-weight: 600;
+}
+
 /* Legal note */
 .legal-note {
   display: flex;
@@ -379,6 +537,13 @@ function submitForm() {
 
 .btn-primary:hover {
   box-shadow: var(--shadow-hover);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .divider {
