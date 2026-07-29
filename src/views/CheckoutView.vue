@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cartStore'
 import { useUserStore } from '../stores/userStore'
 import { useOrderStore } from '../stores/orderStore'
-import { useToast } from '../composables/usetoast'
+import { useToast } from '../composables/useToast'
 import LoadingSpinner from '../components/LoadingSpinner.vue'
 
 const router = useRouter()

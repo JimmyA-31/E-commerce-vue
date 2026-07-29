@@ -2,7 +2,7 @@
 import Header from './components/Header.vue'
 import CartSidebar from './components/CartSidebar.vue'
 import Footer from './components/Footer.vue'
-import ToastContainer from './components/Toastcontainer.vue'
+import ToastContainer from './components/ToastContainer.vue'
 import ConfirmModal from './components/ConfirmModal.vue'
 </script>
 

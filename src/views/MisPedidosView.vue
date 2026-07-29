@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useOrderStore } from '../stores/orderStore'
 import { useCartStore } from '../stores/cartStore'
-import { useToast } from '../composables/usetoast'
+import { useToast } from '../composables/useToast'
 import { useConfirm } from '../composables/useConfirm'
 import type { Order, OrderStatus } from '../stores/orderStore'
 

@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import type { Product } from '../services/productService'
+import { useConfirm } from '../composables/useConfirm'
+import { useToast } from '../composables/useToast'
 
 export interface CartItem extends Product {
   quantity: number
@@ -10,7 +12,8 @@ const CART_KEY = 'vue-tienda-cart'
 
 export const useCartStore = defineStore('cart', () => {
 
-
+  const toast = useToast()
+  const { confirmDialog } = useConfirm()
   const savedCart = localStorage.getItem(CART_KEY)
   const initialItems: CartItem[] = savedCart ? JSON.parse(savedCart) : []
 
@@ -43,8 +46,18 @@ export const useCartStore = defineStore('cart', () => {
     items.value = items.value.filter(i => i.id !== productId)
   }
 
-  function clearCart() {
+  async function clearCart() {
+    const confirmed = await confirmDialog({
+    title: 'Borrar productos del carrito',
+    message: 'Se eliminarán TODOS los productos del carrito. Esta acción no se puede deshacer.',
+    confirmText: 'Sí, borrar todo',
+    cancelText: 'Cancelar',
+    danger: true
+  })
+  if (!confirmed) return
+
     items.value = []
+    toast.info('Carrito vaciado')
   }
 
   function increaseQuantity(productId: number) {

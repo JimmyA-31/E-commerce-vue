@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useCartStore } from '../stores/cartStore'
 import { useWishlistStore } from '../stores/wishlistStore'
-import { useToast } from '../composables/usetoast'
+import { useToast } from '../composables/useToast'
 
 const props = defineProps<{
   title: string

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import LoadingSpinner from '../components/LoadingSpinner.vue'
-import { useToast } from '../composables/usetoast'
+import { useToast } from '../composables/useToast'
 
 const submitted = ref(false)
 const isSubmitting = ref(false)
