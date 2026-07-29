@@ -2,6 +2,8 @@
 import Header from './components/Header.vue'
 import CartSidebar from './components/CartSidebar.vue'
 import Footer from './components/Footer.vue'
+import ToastContainer from './components/Toastcontainer.vue'
+import ConfirmModal from './components/ConfirmModal.vue'
 </script>
 
 <template>
@@ -13,6 +15,8 @@ import Footer from './components/Footer.vue'
     </Transition>
   </RouterView>
   <Footer />
+  <ToastContainer />
+  <ConfirmModal />
 </template>
 
 <style>

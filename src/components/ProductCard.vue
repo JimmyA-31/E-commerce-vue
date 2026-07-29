@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useCartStore } from '../stores/cartStore'
 import { useWishlistStore } from '../stores/wishlistStore'
+import { useToast } from '../composables/usetoast'
 
 const props = defineProps<{
   title: string
@@ -14,16 +15,21 @@ const props = defineProps<{
 
 const cart = useCartStore()
 const wishlist = useWishlistStore()
+const toast = useToast()
 const added = ref(false)
 
 function agregar() {
   cart.addToCart({ ...props })
   added.value = true
+  toast.success(`${props.title} agregado al carrito`)
   setTimeout(() => (added.value = false), 1500)
 }
 
 function toggleFavorite() {
   wishlist.toggleWishlist({ ...props })
+  toast.info(
+    wishlist.isInWishlist(props.id) ? 'Agregado a favoritos ❤️' : 'Quitado de favoritos'
+  )
 }
 </script>
 

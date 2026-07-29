@@ -3,13 +3,15 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cartStore'
 import { useUserStore } from '../stores/userStore'
-import LoadingSpinner from '../components/LoadingSpinner.vue'
 import { useOrderStore } from '../stores/orderStore'
+import { useToast } from '../composables/usetoast'
+import LoadingSpinner from '../components/LoadingSpinner.vue'
 
 const router = useRouter()
 const cart = useCartStore()
 const userStore = useUserStore()
 const orderStore = useOrderStore()
+const toast = useToast()
 
 onMounted(() => {
   if (userStore.isLoggedIn) {
@@ -20,18 +22,17 @@ onMounted(() => {
 
 const step = ref(1)
 const orderPlaced = ref(false)
+const isProcessing = ref(false)
+const lastOrderId = ref('')
 
 const form = ref({
-  // Paso 1 - Personal
   name: '',
   email: '',
   phone: '',
-  // Paso 2 - Envío
   address: '',
   city: '',
   zip: '',
   country: 'Perú',
-  // Paso 3 - Pago
   cardName: '',
   cardNumber: '',
   cardExpiry: '',
@@ -58,7 +59,6 @@ function clearError(field: keyof typeof errors) {
   errors[field] = ''
 }
 
-// ---------- Validación por paso ----------
 function validateStep1(): boolean {
   let valid = true
 
@@ -191,14 +191,17 @@ function validateStep3(): boolean {
 
 function nextStep() {
   const isValid = step.value === 1 ? validateStep1() : validateStep2()
-  if (isValid && step.value < 3) step.value++
+  if (!isValid) {
+    toast.warning('Revisa los campos marcados antes de continuar')
+    return
+  }
+  if (step.value < 3) step.value++
 }
 
 function prevStep() {
   if (step.value > 1) step.value--
 }
 
-// ---------- Formateo de inputs ----------
 function formatPhone(e: Event) {
   const input = e.target as HTMLInputElement
   form.value.phone = input.value.replace(/\D/g, '').slice(0, 9)
@@ -236,11 +239,11 @@ function formatCvv(e: Event) {
   clearError('cardCvv')
 }
 
-const isProcessing = ref(false)
-const lastOrderId = ref('')
-
 function placeOrder() {
-  if (!validateStep3()) return
+  if (!validateStep3()) {
+    toast.warning('Revisa los datos de tu tarjeta')
+    return
+  }
 
   isProcessing.value = true
 
@@ -263,6 +266,7 @@ function placeOrder() {
     isProcessing.value = false
     orderPlaced.value = true
     cart.clearCart()
+    toast.success(`¡Pedido #${newOrder.id} confirmado!`)
   }, 1800)
 }
 </script>
