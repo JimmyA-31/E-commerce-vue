@@ -3,11 +3,15 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useOrderStore } from '../stores/orderStore'
 import { useCartStore } from '../stores/cartStore'
+import { useToast } from '../composables/useToast'
+import { useConfirm } from '../composables/useConfirm'
 import type { Order, OrderStatus } from '../stores/orderStore'
 
 const router = useRouter()
 const orderStore = useOrderStore()
 const cart = useCartStore()
+const toast = useToast()
+const { confirmDialog } = useConfirm()
 
 const activeFilter = ref<'todos' | OrderStatus>('todos')
 const visibleCount = ref(10)
@@ -36,13 +40,21 @@ function loadMore() {
 
 function setFilter(filter: 'todos' | OrderStatus) {
   activeFilter.value = filter
-  visibleCount.value = 10 // resetea la paginación al cambiar de filtro
+  visibleCount.value = 10
 }
 
-function handleClearAll() {
-  const confirmed = confirm('¿Borrar TODOS los pedidos de prueba? Esta acción no se puede deshacer.')
+async function handleClearAll() {
+  const confirmed = await confirmDialog({
+    title: 'Borrar historial de prueba',
+    message: 'Se eliminarán TODOS los pedidos guardados. Esta acción no se puede deshacer.',
+    confirmText: 'Sí, borrar todo',
+    cancelText: 'Cancelar',
+    danger: true
+  })
   if (!confirmed) return
+
   orderStore.clearAllOrders()
+  toast.info('Historial de pedidos borrado')
 }
 
 const statusLabels: Record<OrderStatus, string> = {
@@ -59,10 +71,18 @@ const statusIcons: Record<OrderStatus, string> = {
   cancelado: '❌'
 }
 
-function handleCancel(order: Order) {
-  const confirmed = confirm(`¿Seguro que deseas cancelar el pedido #${order.id}?`)
+async function handleCancel(order: Order) {
+  const confirmed = await confirmDialog({
+    title: 'Cancelar pedido',
+    message: `¿Seguro que deseas cancelar el pedido #${order.id}? Esta acción no se puede deshacer.`,
+    confirmText: 'Sí, cancelar',
+    cancelText: 'No, mantener',
+    danger: true
+  })
   if (!confirmed) return
+
   orderStore.cancelOrder(order.id)
+  toast.success('Pedido cancelado correctamente')
 }
 
 function formatDate(dateISO: string): string {
@@ -80,6 +100,7 @@ function volverAComprar(order: Order) {
     }
   })
   cart.isOpen = true
+  toast.success('Productos agregados al carrito')
 }
 </script>
 

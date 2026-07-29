@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import LoadingSpinner from '../components/LoadingSpinner.vue'
+import { useToast } from '../composables/useToast'
 
 const submitted = ref(false)
 const isSubmitting = ref(false)
+const toast = useToast()
 
 const form = ref({
   // Datos personales
@@ -103,7 +105,11 @@ function validateForm(): boolean {
 }
 
 function submitForm() {
-  if (!validateForm()) return
+  if (!validateForm()) {
+    toast.warning('Por favor llena los campos obligatorios correctamente')
+    return
+  }
+
 
   isSubmitting.value = true
 
