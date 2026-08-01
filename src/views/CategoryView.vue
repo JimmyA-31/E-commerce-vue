@@ -5,6 +5,7 @@ import { useProducts } from '../composables/useProducts'
 import ProductCard from '../components/ProductCard.vue'
 import TestimonialsCarousel from '../components/Testimonialscarousel.vue'
 import NewsletterBanner from '../components/NewsletterBanner.vue'
+import LoadingSpinner from '../components/LoadingSpinner.vue'
 
 const route = useRoute()
 
@@ -109,10 +110,7 @@ watch(() => route.params.slug, applyCategoryFromRoute)
         <p>{{ filteredProducts.length }} productos disponibles</p>
       </div>
 
-      <div v-if="loading" class="loading">
-        <div class="spinner"></div>
-        <p>Cargando productos...</p>
-      </div>
+      <LoadingSpinner v-if="loading" message="Cargando productos..." />
 
       <TransitionGroup name="list" tag="div" class="grid" v-else-if="filteredProducts.length">
         <ProductCard
@@ -251,7 +249,6 @@ watch(() => route.params.slug, applyCategoryFromRoute)
   justify-content: center;
 }
 
-.loading,
 .empty {
   text-align: center;
   padding: 64px;
@@ -260,19 +257,6 @@ watch(() => route.params.slug, applyCategoryFromRoute)
   align-items: center;
   gap: 16px;
   color: var(--gray);
-}
-
-.spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid var(--peach, #eee);
-  border-top-color: var(--primary);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }
 
 .btn-primary {

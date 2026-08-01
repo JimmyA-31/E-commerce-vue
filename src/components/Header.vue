@@ -3,18 +3,17 @@ import { ref, computed } from 'vue'
 import { useCartStore } from '../stores/cartStore'
 import { useUserStore } from '../stores/userStore'
 import { useWishlistStore } from '../stores/wishlistStore'
+import { useAuth } from '../composables/useAuth'
 
 const cart = useCartStore()
 const userStore = useUserStore()
 const wishlist = useWishlistStore()
+const { openLoginModal, logout } = useAuth()
 
 const mobileMenuOpen = ref(false)
 const searchOpen = ref(false)
 const searchQuery = ref('')
 const showAccountMenu = ref(false)
-const showLoginModal = ref(false)
-
-const loginForm = ref({ name: '', email: '' })
 
 const categories = [
   { label: 'Ropa', link: '/categoria/ropa' },
@@ -25,8 +24,10 @@ const categories = [
 
 const accountLabel = computed(() => userStore.isLoggedIn ? `Hola, ${userStore.user?.name}` : 'Mi cuenta')
 
-function closeMobileMenu() { mobileMenuOpen.value = false }
-function openLoginModal() { loginForm.value = { name: '', email: '' }; showLoginModal.value = true }
+function closeMobileMenu() {
+  mobileMenuOpen.value = false
+}
+
 function toggleAccountMenu() {
   if (!userStore.isLoggedIn) {
     openLoginModal()
@@ -34,15 +35,21 @@ function toggleAccountMenu() {
   }
   showAccountMenu.value = !showAccountMenu.value
 }
-function submitLogin() {
-  const n = loginForm.value.name.trim()
-  const e = loginForm.value.email.trim()
-  if (!n || !e) return
-  userStore.login(n, e)
-  showLoginModal.value = false
-  showAccountMenu.value = true
+
+function handleLogout() {
+  logout()
+  showAccountMenu.value = false
 }
-function logout() { userStore.logout(); showAccountMenu.value = false }
+
+// Botón de cuenta en el menú mobile: debe loguear o desloguear según corresponda
+function handleMobileAccountClick() {
+  if (userStore.isLoggedIn) {
+    handleLogout()
+  } else {
+    openLoginModal()
+  }
+  closeMobileMenu()
+}
 </script>
 
 <template>
@@ -90,10 +97,23 @@ function logout() { userStore.logout(); showAccountMenu.value = false }
                 <strong>{{ userStore.user?.name }}</strong>
                 <small>{{ userStore.user?.email }}</small>
               </div>
-              <RouterLink to="/mis-pedidos" class="menu-item" @click="showAccountMenu = false">
+              <RouterLink
+                v-if="userStore.isLoggedIn"
+                to="/mis-pedidos"
+                class="menu-item"
+                @click="showAccountMenu = false"
+              >
                 Mis pedidos
               </RouterLink>
-              <button class="menu-item" v-if="userStore.isLoggedIn" @click="logout" type="button">Cerrar sesión</button>
+              <RouterLink
+                v-if="userStore.isLoggedIn"
+                to="/favoritos"
+                class="menu-item"
+                @click="showAccountMenu = false"
+              >
+                Favoritos
+              </RouterLink>
+              <button class="menu-item" v-if="userStore.isLoggedIn" @click="handleLogout" type="button">Cerrar sesión</button>
               <button class="menu-item" v-else @click="openLoginModal" type="button">Ingresar</button>
             </div>
           </div>
@@ -111,29 +131,13 @@ function logout() { userStore.logout(); showAccountMenu.value = false }
         <RouterLink to="/" @click="closeMobileMenu">Inicio</RouterLink>
         <RouterLink v-for="cat in categories" :key="cat.label" :to="cat.link" @click="closeMobileMenu">{{ cat.label }}</RouterLink>
         <div class="mobile-nav-divider"></div>
-        <a href="#">Favoritos</a>
-        <button class="mobile-account-btn" @click="openLoginModal" type="button">{{ userStore.isLoggedIn ? 'Cerrar sesión' : 'Mi cuenta' }}</button>
+        <RouterLink to="/favoritos" @click="closeMobileMenu">Favoritos</RouterLink>
+        <RouterLink v-if="userStore.isLoggedIn" to="/mis-pedidos" @click="closeMobileMenu">Mis pedidos</RouterLink>
+        <button class="mobile-account-btn" @click="handleMobileAccountClick" type="button">
+          {{ userStore.isLoggedIn ? 'Cerrar sesión' : 'Mi cuenta' }}
+        </button>
       </nav>
     </Transition>
-
-    <div v-if="showLoginModal" class="modal-backdrop" @click.self="showLoginModal = false">
-      <div class="modal-card">
-        <h3>Ingresar</h3>
-        <p>Introduce tu nombre y correo para continuar (demo).</p>
-        <div class="form-group">
-          <label>Nombre</label>
-          <input v-model="loginForm.name" type="text" placeholder="Tu nombre" />
-        </div>
-        <div class="form-group">
-          <label>Correo</label>
-          <input v-model="loginForm.email" type="email" placeholder="correo@ejemplo.com" />
-        </div>
-        <div class="btn-row">
-          <button class="btn-secondary" @click="showLoginModal = false">Cancelar</button>
-          <button class="btn-primary" @click="submitLogin">Ingresar</button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -154,7 +158,6 @@ function logout() { userStore.logout(); showAccountMenu.value = false }
 .search-box { display:flex; align-items:center; gap:8px; background:var(--surface); padding:6px; border-radius:12px; border:1px solid rgba(156,43,27,0.04) }
 .search-input { border:0; outline:none; background:transparent; width:180px; padding:6px; font-family: var(--font-body); color: var(--ink) }
 
-/* === FIX PRINCIPAL: reset de padding/border-radius para botones ícono === */
 .icon-btn,
 .menu-toggle {
   background: transparent;
@@ -173,7 +176,6 @@ function logout() { userStore.logout(); showAccountMenu.value = false }
 .icon-btn:hover,
 .menu-toggle:hover { background: rgba(232,84,63,0.06); transform: none }
 
-/* Hamburguesa: oculta en desktop por defecto, visible solo en mobile */
 .menu-toggle { display: none }
 
 .cart-btn { width: auto; padding: 0 10px !important; gap:8px }
@@ -183,7 +185,19 @@ function logout() { userStore.logout(); showAccountMenu.value = false }
 .account-label { font-size:14px; font-weight:600; color:var(--ink); margin-left:6px }
 .account-menu { position:absolute; top:54px; right:0; background:var(--white); border:1px solid rgba(156,43,27,0.06); border-radius:12px; box-shadow:var(--shadow); padding:10px; min-width:200px; z-index:10 }
 .account-info { display:flex; flex-direction:column; gap:4px; padding-bottom:8px; border-bottom:1px solid rgba(156,43,27,0.04); margin-bottom:8px }
-.menu-item { width:100%; text-align:left; background:none; border:none; color:var(--ink); font-family:var(--font-body); font-weight:700; padding:10px 8px; border-radius:8px }
+.menu-item {
+  display: block;
+  width:100%;
+  text-align:left;
+  background:none;
+  border:none;
+  color:var(--ink);
+  font-family:var(--font-body);
+  font-weight:700;
+  padding:10px 8px;
+  border-radius:8px;
+  text-decoration: none;
+}
 .menu-item:hover { background:var(--surface); transform:none }
 
 /* Mobile nav */
@@ -214,24 +228,6 @@ function logout() { userStore.logout(); showAccountMenu.value = false }
   border-radius: 10px;
   font-weight: 700;
 }
-
-.menu-item {
-  display: block;
-  text-decoration: none;
-}
-
-/* Modal */
-.modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center; z-index:40 }
-.modal-card { background:var(--white); padding:20px; border-radius:12px; width:360px; box-shadow:var(--shadow) }
-.modal-card h3 { color: var(--ink) }
-.modal-card p { color: var(--gray); font-size: 13px; margin: 6px 0 14px }
-.form-group { display:flex; flex-direction:column; gap:6px; margin-bottom:12px }
-.form-group label { font-size:13px; font-weight:600; color:var(--ink) }
-.form-group input { padding:10px 12px; border:2px solid var(--surface); border-radius:10px; font-family:var(--font-body); outline:none }
-.form-group input:focus { border-color: var(--coral) }
-.btn-row { display:flex; gap:12px; justify-content:flex-end; margin-top:12px }
-.btn-primary { background: var(--gradient); color: white; padding:10px 14px !important; border-radius:12px }
-.btn-secondary { background: transparent; color: var(--gray); border: 2px solid var(--surface); padding:10px 14px !important; border-radius:12px }
 
 @media (max-width:900px) {
   .nav{display:none}

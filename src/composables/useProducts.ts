@@ -25,9 +25,20 @@ export function useProducts() {
   })
 
   async function loadProducts() {
+    loading.value = true
+    const start = Date.now()
+
     const [prods, cats] = await Promise.all([getProducts(), getCategories()])
     products.value = prods
     categories.value = cats
+
+    // Garantiza que el spinner sea visible al menos 400ms, evita el "parpadeo"
+    const elapsed = Date.now() - start
+    const minDelay = 400
+    if (elapsed < minDelay) {
+      await new Promise(resolve => setTimeout(resolve, minDelay - elapsed))
+    }
+
     loading.value = false
   }
 

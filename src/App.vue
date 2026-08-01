@@ -4,6 +4,7 @@ import CartSidebar from './components/CartSidebar.vue'
 import Footer from './components/Footer.vue'
 import ToastContainer from './components/ToastContainer.vue'
 import ConfirmModal from './components/ConfirmModal.vue'
+import LoginModal from './components/LoginModal.vue'
 </script>
 
 <template>
@@ -17,6 +18,7 @@ import ConfirmModal from './components/ConfirmModal.vue'
   <Footer />
   <ToastContainer />
   <ConfirmModal />
+  <LoginModal />
 </template>
 
 <style>
