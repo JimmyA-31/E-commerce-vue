@@ -6,6 +6,7 @@ import CategoryBanners from '../components/Categorybanners.vue'
 import FeaturedProducts from '../components/Featureproducts.vue'
 import TestimonialsCarousel from '../components/Testimonialscarousel.vue'
 import NewsletterBanner from '../components/NewsletterBanner.vue'
+import LoadingSpinner from '../components/LoadingSpinner.vue'
 
 const {
   categories,
@@ -48,7 +49,9 @@ function onCategorySelect(slug: string) {
           <button class="btn-primary" @click="scrollToProducts">
             Ver productos ↓
           </button>
-          <button class="btn-secondary">Ver ofertas 🏷️</button>
+          <RouterLink to="/ofertas" class="btn-secondary">
+            Ver ofertas 🏷️
+          </RouterLink>
         </div>
         <div class="hero-stats">
           <div class="stat">
@@ -150,10 +153,7 @@ function onCategorySelect(slug: string) {
       </div>
 
       <!-- Loading -->
-      <div v-if="loading" class="loading">
-        <div class="spinner"></div>
-        <p>Cargando productos...</p>
-      </div>
+      <LoadingSpinner v-if="loading" message="Cargando productos..." />
 
       <!-- Grid -->
       <TransitionGroup name="list" tag="div" class="grid" v-else>
@@ -270,10 +270,16 @@ main {
   font-family: var(--font-body);
   font-weight: 700;
   font-size: 15px;
+  border-radius: 30px;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.2s ease;
 }
 
 .btn-secondary:hover {
   background: var(--surface, var(--bg));
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
 }
 
 .hero-stats {
@@ -513,30 +519,6 @@ main {
   flex-wrap: wrap;
   gap: 28px;
   justify-content: center;
-}
-
-/* Loading */
-.loading {
-  text-align: center;
-  padding: 64px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  color: var(--gray);
-}
-
-.spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid var(--peach, #eee);
-  border-top-color: var(--primary);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }
 
 /* Empty */

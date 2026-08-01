@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getProductById } from '../services/productService'
 import { useProducts } from '../composables/useProducts'
@@ -7,23 +7,42 @@ import { useCartStore } from '../stores/cartStore'
 import ProductCard from '../components/ProductCard.vue'
 import TestimonialsCarousel from '../components/Testimonialscarousel.vue'
 import NewsletterBanner from '../components/NewsletterBanner.vue'
+import LoadingSpinner from '../components/LoadingSpinner.vue'
+import { useWishlistStore } from '../stores/wishlistStore'
+import { useToast } from '../composables/useToast'
 
+
+const toast = useToast()
+const wishlist = useWishlistStore()
 const route = useRoute()
 const router = useRouter()
 const cart = useCartStore()
 const { filteredProducts, loadProducts } = useProducts()
 
-const id = Number(route.params.id)
 const added = ref(false)
 const quantity = ref(1)
 const product = ref()
 const loading = ref(true)
 
+async function fetchProduct(productId: number) {
+  loading.value = true
+  quantity.value = 1
+  product.value = await getProductById(productId)
+  loading.value = false
+}
+
 onMounted(async () => {
   await loadProducts()
-  product.value = await getProductById(id)
-  loading.value = false
+  await fetchProduct(Number(route.params.id))
 })
+
+// Se dispara cada vez que cambia el :id en la URL, aunque el componente no se destruya
+watch(
+  () => route.params.id,
+  (newId) => {
+    if (newId) fetchProduct(Number(newId))
+  }
+)
 
 const relatedProducts = computed(() => {
   if (!product.value) return []
@@ -38,19 +57,24 @@ function agregar() {
       cart.addToCart(product.value)
     }
     added.value = true
+    toast.success(`${product.value.title} agregado al carrito`)
     setTimeout(() => added.value = false, 1500)
   }
+}
+
+function toggleFavorite() {
+  if (!product.value) return
+  wishlist.toggleWishlist({ ...product.value })
+  toast.info(
+    wishlist.isInWishlist(product.value.id) ? 'Agregado a favoritos ❤️' : 'Quitado de favoritos'
+  )
 }
 </script>
 
 <template>
   <main class="detail">
 
-    <!-- Loading -->
-    <div v-if="loading" class="loading">
-      <div class="spinner"></div>
-      <p>Cargando producto...</p>
-    </div>
+    <LoadingSpinner v-if="loading" message="Cargando producto..." />
 
     <template v-else-if="product">
       <!-- Breadcrumb -->
@@ -121,7 +145,17 @@ function agregar() {
             >
               {{ added ? '✓ Agregado al carrito' : '🛒 Agregar al carrito' }}
             </button>
-            <button class="btn-wishlist">♡</button>
+
+            <button
+              class="btn-wishlist"
+              :class="{ active: wishlist.isInWishlist(product.id) }"
+              @click="toggleFavorite"
+              :aria-label="wishlist.isInWishlist(product.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'"
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" :fill="wishlist.isInWishlist(product.id) ? 'currentColor' : 'none'">
+                <path d="M12 21s-7-4.35-9-7.25C1 10 5 6 8.5 6 10 6 12 8 12 8s2-2 3.5-2C19 6 23 10 21 13.75 19 16.65 12 21 12 21z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
           </div>
 
           <button class="btn-back" @click="router.push('/')">
@@ -570,28 +604,28 @@ h1 {
   justify-content: center;
 }
 
-/* Loading */
-.loading {
+.btn-wishlist {
+  width: 54px;
+  height: 54px;
+  background: white;
+  border: 2px solid #eee;
+  border-radius: 14px;
+  padding: 0;
+  color: var(--secondary);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 400px;
-  gap: 16px;
-  color: var(--gray);
 }
 
-.spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid #eee;
-  border-top-color: var(--primary);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+.btn-wishlist:hover {
+  border-color: var(--secondary);
+  transform: none;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.btn-wishlist.active {
+  border-color: var(--secondary);
+  background: var(--bg);
+  color: var(--secondary);
 }
 
 @media (max-width: 900px) {
